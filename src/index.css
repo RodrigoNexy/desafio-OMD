@@ -3,19 +3,73 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
   body {
-    @apply min-h-screen bg-gray-50 text-gray-900 font-sans;
+    @apply min-h-screen bg-background text-text-primary font-sans;
+    background-color: #0d0d0d;
+    color: #f5f5f5;
+    color-scheme: dark;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold m-0;
+    @apply font-bold m-0 text-text-primary;
   }
 
   p {
-    @apply m-0;
+    @apply m-0 text-text-secondary;
   }
 
   a {
-    @apply text-primary hover:underline;
+    @apply text-accent transition-all duration-200;
+  }
+
+  a:hover {
+    @apply text-accent-soft;
+    text-shadow: 0 0 24px rgba(0, 212, 255, 0.4);
+  }
+
+  input,
+  select,
+  textarea {
+    background-color: #151515;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f5f5f5;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #8a8a8a;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: #00d4ff;
+    box-shadow: 0 0 0 1px #00d4ff, 0 18px 48px rgba(0, 212, 255, 0.12);
+    outline: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0d0d0d;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1c1c1c;
+    border-radius: 999px;
+    border: 2px solid #0d0d0d;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #00d4ff;
   }
 }
