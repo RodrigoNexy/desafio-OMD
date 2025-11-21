@@ -26,7 +26,7 @@ describe('Button Component', () => {
     it('should render with fullWidth when specified', () => {
       render(<Button fullWidth>Full Width Button</Button>);
       const button = screen.getByText('Full Width Button');
-      expect(button).toHaveClass('w-full');
+      expect(button).toHaveStyle({ width: '100%' });
     });
   });
 
