@@ -1,0 +1,2 @@
+export { AcaoCard } from "./AcaoCard";
+

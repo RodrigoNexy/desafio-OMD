@@ -1,0 +1,2 @@
+export { UpdatePrazoForm } from "./UpdatePrazoForm";
+
