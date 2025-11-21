@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply min-h-screen bg-gray-50 text-gray-900 font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold m-0;
+  }
+
+  p {
+    @apply m-0;
+  }
+
+  a {
+    @apply text-primary hover:underline;
+  }
+}
