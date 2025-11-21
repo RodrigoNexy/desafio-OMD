@@ -55,17 +55,19 @@ export const AcaoCard = memo<AcaoCardProps>(({
         </p>
       </CardContent>
       <CardFooter>
-        {nextStatus && (
-          <Button variant="primary" onClick={handleNextStatus} disabled={isLoading}>
-            Marcar como {nextStatus}
+        <div className="flex gap-2">
+          {nextStatus && (
+            <Button variant="primary" onClick={handleNextStatus} disabled={isLoading}>
+              Marcar como {nextStatus}
+            </Button>
+          )}
+          <Button variant="secondary" onClick={onUpdatePrazo} disabled={isLoading}>
+            Alterar Prazo
           </Button>
-        )}
-        <Button variant="secondary" onClick={onUpdatePrazo} disabled={isLoading}>
-          Alterar Prazo
-        </Button>
-        <Button variant="danger" onClick={handleDelete} disabled={isLoading}>
-          Deletar
-        </Button>
+          <Button variant="danger" onClick={handleDelete} disabled={isLoading}>
+            Deletar
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
