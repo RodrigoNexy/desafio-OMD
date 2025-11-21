@@ -34,7 +34,7 @@ export const Layout = memo<LayoutProps>(({ children }) => {
         {children}
       </main>
       <footer className="bg-surface-muted border-t border-border text-text-secondary py-4 px-8 text-center text-sm">
-        <p className="m-0">© 2024 Sistema de Plano de Ação - OMD Soluções</p>
+        <p className="m-0">© 2025 Sistema de Plano de Ação - OMD Soluções</p>
       </footer>
     </div>
   );
