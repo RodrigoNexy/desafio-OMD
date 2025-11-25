@@ -95,8 +95,12 @@ src/
 
 ### Pré-requisitos
 
-- Node.js 18+
+- Node.js 20.19+ ou 22.12+ (recomendado para Vite 7.2.4+)
 - npm
+
+> ⚠️ **Importante**: Este projeto requer Node.js versão 20.19 ou superior (ou 22.12+). Versões anteriores como Node.js 18.x não são compatíveis com Vite 7.x.
+>
+> ⚠️ **Nota sobre versões intermediárias**: Versões como Node.js 22.6.0 podem funcionar, mas gerarão avisos durante a instalação. Para evitar avisos, use Node.js 20.19+ ou 22.12+.
 
 ### Instalação e Execução
 
@@ -108,6 +112,23 @@ npm install
 npm run dev
 
 # A aplicação estará disponível em http://localhost:5173
+```
+
+> ✅ **Versões testadas e funcionais**: Node.js 22.6.0+, 22.16+, 20.19+ e 22.12+
+
+#### Limpar e Reinstalar Dependências (se necessário)
+
+**No PowerShell (Windows):**
+```powershell
+Remove-Item -Recurse -Force node_modules
+Remove-Item -Force package-lock.json
+npm install
+```
+
+**No Bash/Linux/Mac:**
+```bash
+rm -rf node_modules package-lock.json
+npm install
 ```
 
 ### Build para Produção

@@ -10,4 +10,14 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
   },
+  server: {
+    port: 5173,
+    host: true,
+    strictPort: false,
+    open: false,
+  },
+  build: {
+    sourcemap: false,
+    minify: 'esbuild',
+  },
 })
