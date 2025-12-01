@@ -1,7 +1,7 @@
 import { create } from "zustand";
+import { usePlanoStore } from "./plano/planoStore";
+import { useAcaoStore } from "./acao/acaoStore";
 import type { PlanoAcao, Acao, PlanoAcaoFormData, AcaoFormData, PlanoStatus } from "../types";
-import { planoAcaoApi } from "../utils/api";
-import { calcularStatusPlano } from "../utils/planoStatusCalculator";
 
 interface PlanoAcaoState {
   planos: PlanoAcao[];
@@ -34,146 +34,60 @@ export const usePlanoAcaoStore = create<PlanoAcaoState>((set, get) => ({
   error: null,
 
   carregarPlanos: async () => {
-    set({ loading: true, error: null });
-    try {
-      const planos = await planoAcaoApi.listar();
-      set({ planos, loading: false });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Erro ao carregar planos",
-        loading: false,
-      });
-    }
+    const planoStore = usePlanoStore.getState();
+    await planoStore.carregarPlanos();
+    const { planos, loading, error } = usePlanoStore.getState();
+    set({ planos, loading, error });
   },
 
   buscarPlano: async (id: string) => {
-    set({ loading: true, error: null });
-    try {
-      const plano = await planoAcaoApi.buscarPorId(id);
-      if (plano) {
-        set({ planoSelecionado: plano, loading: false });
-      } else {
-        set({ error: "Plano não encontrado", loading: false });
-      }
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Erro ao buscar plano",
-        loading: false,
-      });
-    }
+    const planoStore = usePlanoStore.getState();
+    await planoStore.buscarPlano(id);
+    const { planoSelecionado, loading, error } = usePlanoStore.getState();
+    set({ planoSelecionado, loading, error });
   },
 
   criarPlano: async (dados: PlanoAcaoFormData) => {
-    set({ loading: true, error: null });
-    try {
-      const novoPlano = await planoAcaoApi.criar(dados);
-      set((state) => ({
-        planos: [...state.planos, novoPlano],
-        loading: false,
-      }));
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Erro ao criar plano",
-        loading: false,
-      });
-      throw error;
-    }
+    const planoStore = usePlanoStore.getState();
+    await planoStore.criarPlano(dados);
+    const { planos, loading, error } = usePlanoStore.getState();
+    set({ planos, loading, error });
   },
 
   atualizarPlano: async (id: string, dados: Partial<PlanoAcaoFormData>) => {
-    set({ loading: true, error: null });
-    try {
-      const planoAtualizado = await planoAcaoApi.atualizar(id, dados);
-      set((state) => ({
-        planos: state.planos.map((p) => (p.id === id ? planoAtualizado : p)),
-        planoSelecionado:
-          state.planoSelecionado?.id === id
-            ? planoAtualizado
-            : state.planoSelecionado,
-        loading: false,
-      }));
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Erro ao atualizar plano",
-        loading: false,
-      });
-      throw error;
-    }
+    const planoStore = usePlanoStore.getState();
+    await planoStore.atualizarPlano(id, dados);
+    const { planos, planoSelecionado, loading, error } = usePlanoStore.getState();
+    set({ planos, planoSelecionado, loading, error });
   },
 
   atualizarStatusPlano: async (id: string, status: PlanoStatus) => {
-    set({ loading: true, error: null });
-    try {
-      const planoAtualizado = await planoAcaoApi.atualizar(id, { status });
-      set((state) => ({
-        planos: state.planos.map((p) => (p.id === id ? planoAtualizado : p)),
-        planoSelecionado:
-          state.planoSelecionado?.id === id
-            ? planoAtualizado
-            : state.planoSelecionado,
-        loading: false,
-      }));
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Erro ao atualizar status do plano",
-        loading: false,
-      });
-      throw error;
-    }
+    const planoStore = usePlanoStore.getState();
+    await planoStore.atualizarStatusPlano(id, status);
+    const { planos, planoSelecionado, loading, error } = usePlanoStore.getState();
+    set({ planos, planoSelecionado, loading, error });
   },
 
   deletarPlano: async (id: string) => {
-    set({ loading: true, error: null });
-    try {
-      await planoAcaoApi.deletar(id);
-      set((state) => ({
-        planos: state.planos.filter((p) => p.id !== id),
-        planoSelecionado:
-          state.planoSelecionado?.id === id ? null : state.planoSelecionado,
-        loading: false,
-      }));
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Erro ao deletar plano",
-        loading: false,
-      });
-      throw error;
-    }
+    const planoStore = usePlanoStore.getState();
+    await planoStore.deletarPlano(id);
+    const { planos, planoSelecionado, loading, error } = usePlanoStore.getState();
+    set({ planos, planoSelecionado, loading, error });
   },
 
   adicionarAcao: async (planoId: string, dados: AcaoFormData) => {
-    set({ loading: true, error: null });
-    try {
-      await planoAcaoApi.adicionarAcao(planoId, dados);
-      const planoAtualizado = await planoAcaoApi.buscarPorId(planoId);
-
-      if (!planoAtualizado) {
-        throw new Error("Plano não encontrado após adicionar ação");
-      }
-
-      const novoStatus = calcularStatusPlano(planoAtualizado.acoes);
-
-      if (novoStatus !== planoAtualizado.status) {
-        await planoAcaoApi.atualizar(planoId, { status: novoStatus });
-        planoAtualizado.status = novoStatus;
-      }
-
+    const acaoStore = useAcaoStore.getState();
+    const atualizarPlanos = (planoAtualizado: PlanoAcao) => {
       const { planos, planoSelecionado } = get();
-
-      const novoPlanoSelecionado = planoSelecionado?.id === planoId ? planoAtualizado : planoSelecionado;
-
       set({
         planos: planos.map((p) => (p.id === planoId ? planoAtualizado : p)),
-        planoSelecionado: novoPlanoSelecionado,
-        loading: false,
+        planoSelecionado: planoSelecionado?.id === planoId ? planoAtualizado : planoSelecionado,
       });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Erro ao adicionar ação",
-        loading: false,
-      });
-      throw error;
-    }
+    };
+
+    await acaoStore.adicionarAcao(planoId, dados, atualizarPlanos);
+    const { loading, error } = useAcaoStore.getState();
+    set({ loading, error });
   },
 
   atualizarAcao: async (
@@ -181,86 +95,52 @@ export const usePlanoAcaoStore = create<PlanoAcaoState>((set, get) => ({
     acaoId: string,
     dados: Partial<Pick<Acao, "status" | "prazo">>
   ) => {
-    set({ loading: true, error: null });
-    try {
-      await planoAcaoApi.atualizarAcao(planoId, acaoId, dados);
-      let planoAtualizado = await planoAcaoApi.buscarPorId(planoId);
-
-      if (!planoAtualizado) {
-        throw new Error("Plano não encontrado após atualizar ação");
-      }
-
-      const novoStatus = calcularStatusPlano(planoAtualizado.acoes);
-
-      if (novoStatus !== planoAtualizado.status) {
-        await planoAcaoApi.atualizar(planoId, { status: novoStatus });
-        // Recarrega o plano completo após atualizar o status para garantir sincronização
-        const planoRecarregado = await planoAcaoApi.buscarPorId(planoId);
-        if (planoRecarregado) {
-          planoAtualizado = planoRecarregado;
-        } else {
-          planoAtualizado.status = novoStatus;
-        }
-      }
-
+    const acaoStore = useAcaoStore.getState();
+    const atualizarPlanos = (planoAtualizado: PlanoAcao) => {
       const { planos, planoSelecionado } = get();
-      // Cria uma nova referência do plano atualizado para garantir que o React detecte a mudança
       const planoAtualizadoComNovaRef = { ...planoAtualizado, acoes: [...planoAtualizado.acoes] };
       set({
         planos: planos.map((p) => (p.id === planoId ? planoAtualizadoComNovaRef : p)),
-        planoSelecionado:
-          planoSelecionado?.id === planoId ? planoAtualizadoComNovaRef : planoSelecionado,
-        loading: false,
+        planoSelecionado: planoSelecionado?.id === planoId ? planoAtualizadoComNovaRef : planoSelecionado,
       });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Erro ao atualizar ação",
-        loading: false,
-      });
-      throw error;
-    }
+    };
+
+    await acaoStore.atualizarAcao(planoId, acaoId, dados, atualizarPlanos);
+    const { loading, error } = useAcaoStore.getState();
+    set({ loading, error });
   },
 
   deletarAcao: async (planoId: string, acaoId: string) => {
-    set({ loading: true, error: null });
-    try {
-      await planoAcaoApi.deletarAcao(planoId, acaoId);
-      const planoAtualizado = await planoAcaoApi.buscarPorId(planoId);
-
-      if (!planoAtualizado) {
-        throw new Error("Plano não encontrado após deletar ação");
-      }
-
-      const novoStatus = calcularStatusPlano(planoAtualizado.acoes);
-
-      if (novoStatus !== planoAtualizado.status) {
-        await planoAcaoApi.atualizar(planoId, { status: novoStatus });
-        planoAtualizado.status = novoStatus;
-      }
-
+    const acaoStore = useAcaoStore.getState();
+    const atualizarPlanos = (planoAtualizado: PlanoAcao) => {
       const { planos, planoSelecionado } = get();
       set({
         planos: planos.map((p) => (p.id === planoId ? planoAtualizado : p)),
-        planoSelecionado:
-          planoSelecionado?.id === planoId ? planoAtualizado : planoSelecionado,
-        loading: false,
+        planoSelecionado: planoSelecionado?.id === planoId ? planoAtualizado : planoSelecionado,
       });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Erro ao deletar ação",
-        loading: false,
-      });
-      throw error;
-    }
+    };
+
+    await acaoStore.deletarAcao(planoId, acaoId, atualizarPlanos);
+    const { loading, error } = useAcaoStore.getState();
+    set({ loading, error });
   },
 
   setPlanoSelecionado: (plano: PlanoAcao | null) => {
+    const planoStore = usePlanoStore.getState();
+    planoStore.setPlanoSelecionado(plano);
     set({ planoSelecionado: plano });
   },
 
   limparErro: () => {
+    usePlanoStore.getState().limparErro();
+    useAcaoStore.getState().limparErro();
     set({ error: null });
   },
 }));
 
-
+usePlanoStore.subscribe((state) => {
+  usePlanoAcaoStore.setState({
+    planos: state.planos,
+    planoSelecionado: state.planoSelecionado,
+  });
+});
