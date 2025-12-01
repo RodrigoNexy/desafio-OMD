@@ -3,6 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { AcaoCard } from "../AcaoCard";
 import type { Acao } from "../../../types";
+import { CardWrapper } from "./AcaoCardSortable.styled";
 
 interface AcaoCardSortableProps {
   acao: Acao;
@@ -10,6 +11,7 @@ interface AcaoCardSortableProps {
   onUpdatePrazo: () => void;
   onDelete: () => Promise<void>;
   isLoading?: boolean;
+  index?: number;
 }
 
 export const AcaoCardSortable = memo<AcaoCardSortableProps>(({
@@ -18,6 +20,7 @@ export const AcaoCardSortable = memo<AcaoCardSortableProps>(({
   onUpdatePrazo,
   onDelete,
   isLoading = false,
+  index = 0,
 }) => {
   const {
     attributes,
@@ -33,22 +36,24 @@ export const AcaoCardSortable = memo<AcaoCardSortableProps>(({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.5 : undefined,
     cursor: isDragging ? "grabbing" : "grab",
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
-      <div {...attributes} {...listeners} style={{ cursor: 'grab' }}>
-        <AcaoCard
-          acao={acao}
-          onUpdateStatus={() => Promise.resolve()}
-          onUpdatePrazo={onUpdatePrazo}
-          onDelete={onDelete}
-          isLoading={isLoading}
-        />
+    <CardWrapper $index={index}>
+      <div ref={setNodeRef} style={style}>
+        <div {...attributes} {...listeners} style={{ cursor: 'grab' }}>
+          <AcaoCard
+            acao={acao}
+            onUpdateStatus={() => Promise.resolve()}
+            onUpdatePrazo={onUpdatePrazo}
+            onDelete={onDelete}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
-    </div>
+    </CardWrapper>
   );
 });
 

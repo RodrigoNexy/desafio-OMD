@@ -1,4 +1,13 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
 
 export const AcaoCardContainer = styled.div`
   background: #151515;
@@ -8,6 +17,8 @@ export const AcaoCardContainer = styled.div`
   transition: all 0.3s ease;
   width: 100%;
   user-select: none;
+  opacity: 0;
+  animation: ${fadeIn} 0.35s ease-out forwards;
 `;
 
 export const AcaoCardContent = styled.div`

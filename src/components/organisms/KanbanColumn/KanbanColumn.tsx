@@ -51,7 +51,7 @@ export const KanbanColumn = memo<KanbanColumnProps>(({
               Nenhuma ação nesta coluna
             </EmptyState>
           ) : (
-            acoes.map((acao) => (
+            acoes.map((acao, index) => (
               <AcaoCardSortable
                 key={acao.id}
                 acao={acao}
@@ -59,6 +59,7 @@ export const KanbanColumn = memo<KanbanColumnProps>(({
                 onUpdatePrazo={() => onUpdatePrazo(acao)}
                 onDelete={() => onDelete(acao.id)}
                 isLoading={isLoading}
+                index={index}
               />
             ))
           )}

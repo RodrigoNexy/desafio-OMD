@@ -5,12 +5,11 @@ export const StyledButton = styled.button<{
   $fullWidth?: boolean;
 }>`
   padding: 0.625rem 1.25rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   transition: all 0.2s;
-  font-weight: ${props => props.$variant === 'primary' ? '600' : '400'};
+  font-weight: 500;
   width: ${props => props.$fullWidth ? '100%' : 'auto'};
   cursor: pointer;
-  border: none;
 
   &:disabled {
     opacity: 0.6;
@@ -25,35 +24,35 @@ export const StyledButton = styled.button<{
     switch (props.$variant) {
       case 'primary':
         return `
-          background-color: #00d4ff;
-          color: #0d0d0d;
-          box-shadow: 0 18px 40px rgba(0, 212, 255, 0.2);
+          background-color: rgba(255, 255, 255, 0.08);
+          color: #f5f5f5;
+          border: 1px solid rgba(255, 255, 255, 0.12);
 
           &:hover:not(:disabled) {
-            background-color: #4de3ff;
-            box-shadow: 0 26px 60px rgba(0, 212, 255, 0.28);
-            transform: translateY(-2px);
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
           }
         `;
       case 'secondary':
         return `
-          background-color: #151515;
-          color: #f5f5f5;
+          background-color: rgba(255, 255, 255, 0.06);
+          color: #b0b0b0;
           border: 1px solid rgba(255, 255, 255, 0.08);
 
           &:hover:not(:disabled) {
-            background-color: #1c1c1c;
-            transform: translateY(-2px);
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
           }
         `;
       case 'danger':
         return `
-          background-color: #dc3545;
-          color: white;
+          background-color: rgba(220, 53, 69, 0.1);
+          color: #dc3545;
+          border: 1px solid rgba(220, 53, 69, 0.2);
 
           &:hover:not(:disabled) {
-            background-color: #c82333;
-            transform: translateY(-2px);
+            background-color: rgba(220, 53, 69, 0.15);
+            border-color: rgba(220, 53, 69, 0.3);
           }
         `;
       default:

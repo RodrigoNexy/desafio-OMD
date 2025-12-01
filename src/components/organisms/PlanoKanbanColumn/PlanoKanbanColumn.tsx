@@ -85,11 +85,12 @@ export const PlanoKanbanColumn = memo<PlanoKanbanColumnProps>(({
               Nenhum plano nesta coluna
             </EmptyState>
           ) : (
-            planos.map((plano) => (
+            planos.map((plano, index) => (
               <PlanoCardSortable
                 key={plano.id}
                 plano={plano}
                 onClick={onClick}
+                index={index}
               />
             ))
           )}

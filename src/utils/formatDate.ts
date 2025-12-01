@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow, isPast, isToday, isTomorrow } from "date-fns";
+import { format, formatDistanceToNow, isPast, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export const formatDate = (dateString: string): string => {
@@ -16,20 +16,16 @@ export const formatRelativeDate = (dateString: string): string => {
   return formatDistanceToNow(date, { addSuffix: true, locale: ptBR });
 };
 
-export const getPrazoStatus = (prazo: string): "success" | "warning" | "danger" => {
+export const getPrazoStatus = (prazo: string): "success" | "warning" | "danger" | "secondary" => {
   const prazoDate = new Date(prazo);
   prazoDate.setHours(23, 59, 59, 999);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   if (isPast(prazoDate) && !isToday(prazoDate)) {
-    return "danger"; // Atrasado
+    return "danger";
   }
 
-  if (isToday(prazoDate) || isTomorrow(prazoDate)) {
-    return "warning"; // Próximo ou hoje
-  }
-
-  return "success"; // No prazo
+  return "secondary";
 };
 

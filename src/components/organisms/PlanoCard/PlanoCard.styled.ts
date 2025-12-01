@@ -1,4 +1,13 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
 
 export const PlanoCardContainer = styled.div`
   background: #151515;
@@ -10,11 +19,12 @@ export const PlanoCardContainer = styled.div`
   max-width: 380px;
   height: 100%;
   user-select: none;
+  opacity: 0;
+  animation: ${fadeIn} 0.4s ease-out forwards;
 
   &:hover {
-    border-color: #00d4ff;
-    transform: translateY(-4px);
-    box-shadow: 0 18px 40px rgba(0, 212, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: translateY(-2px);
   }
 `;
 
