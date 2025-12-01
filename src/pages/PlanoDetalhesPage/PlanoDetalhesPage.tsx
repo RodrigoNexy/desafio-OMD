@@ -1,7 +1,7 @@
-import { memo, useEffect, useState, useCallback, useMemo } from "react";
+import { memo, useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../../components/templates";
-import { AcaoCard, PlanoForm } from "../../components/organisms";
+import { PlanoForm, KanbanBoard } from "../../components/organisms";
 import { Modal, Card, CardHeader, CardContent } from "../../components/molecules";
 import { Button, Loading, ErrorMessage, Badge } from "../../components/atoms";
 import { usePlanoAcaoStore } from "../../store/planoAcaoStore";
@@ -66,11 +66,6 @@ export const PlanoDetalhesPage = memo(() => {
     }
   }, [id, atualizarPlano]);
 
-  const acoesOrdenadas = useMemo(() => {
-    if (!planoSelecionado) return [];
-    const statusOrder = { "Feita": 2, "Fazendo": 1, "A Fazer": 0 };
-    return [...planoSelecionado.acoes].sort((a, b) => statusOrder[b.status] - statusOrder[a.status]);
-  }, [planoSelecionado]);
 
   if (loading && !planoSelecionado) {
     return <Loading fullScreen />;
@@ -116,13 +111,13 @@ export const PlanoDetalhesPage = memo(() => {
       {error && <ErrorMessage message={error} />}
 
       <div className="flex justify-between items-center mb-8">
-        <h3 className="m-0 text-xl font-bold text-text-primary">Ações ({acoesOrdenadas.length})</h3>
+        <h3 className="m-0 text-xl font-bold text-text-primary">Ações ({planoSelecionado.acoes.length})</h3>
         <Button variant="primary" onClick={() => setIsAddAcaoModalOpen(true)}>
           + Adicionar Ação
         </Button>
       </div>
 
-      {acoesOrdenadas.length === 0 ? (
+      {planoSelecionado.acoes.length === 0 ? (
         <div className="text-center p-8 text-text-muted">
           <p className="mb-4">Nenhuma ação cadastrada para este plano.</p>
           <Button variant="primary" onClick={() => setIsAddAcaoModalOpen(true)}>
@@ -130,18 +125,13 @@ export const PlanoDetalhesPage = memo(() => {
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {acoesOrdenadas.map((acao) => (
-            <AcaoCard
-              key={acao.id}
-              acao={acao}
-              onUpdateStatus={(status) => handleUpdateAcaoStatus(acao.id, status)}
-              onUpdatePrazo={() => setUpdatingPrazoAcao(acao)}
-              onDelete={() => handleDeleteAcao(acao.id)}
-              isLoading={loading}
-            />
-          ))}
-        </div>
+        <KanbanBoard
+          acoes={planoSelecionado.acoes}
+          onUpdateStatus={handleUpdateAcaoStatus}
+          onUpdatePrazo={(acao) => setUpdatingPrazoAcao(acao)}
+          onDelete={handleDeleteAcao}
+          isLoading={loading}
+        />
       )}
 
       <Modal

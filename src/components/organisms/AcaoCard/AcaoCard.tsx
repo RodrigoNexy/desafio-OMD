@@ -1,9 +1,17 @@
 import { memo, useMemo, useCallback } from "react";
-import { Card, CardContent, CardFooter } from "../../molecules";
 import { Badge, Button } from "../../atoms";
 import type { Acao } from "../../../types";
 import { formatDate, getPrazoStatus } from "../../../utils/formatDate";
-import { getAcaoStatusBadge, getNextAcaoStatus } from "../../../utils/statusBadge";
+import { getAcaoStatusBadge } from "../../../utils/statusBadge";
+import {
+  AcaoCardContainer,
+  AcaoCardContent,
+  AcaoCardHeader,
+  AcaoCardTitle,
+  AcaoCardStatus,
+  AcaoCardPrazo,
+  AcaoCardFooter,
+} from "./AcaoCard.styled";
 
 interface AcaoCardProps {
   acao: Acao;
@@ -15,19 +23,11 @@ interface AcaoCardProps {
 
 export const AcaoCard = memo<AcaoCardProps>(({
   acao,
-  onUpdateStatus,
   onUpdatePrazo,
   onDelete,
   isLoading = false,
 }) => {
-  const nextStatus = useMemo(() => getNextAcaoStatus(acao.status), [acao.status]);
   const prazoStatus = useMemo(() => getPrazoStatus(acao.prazo), [acao.prazo]);
-
-  const handleNextStatus = useCallback(async () => {
-    if (nextStatus) {
-      await onUpdateStatus(nextStatus);
-    }
-  }, [nextStatus, onUpdateStatus]);
 
   const handleDelete = useCallback(async () => {
     if (window.confirm(`Tem certeza que deseja deletar esta ação?`)) {
@@ -36,40 +36,33 @@ export const AcaoCard = memo<AcaoCardProps>(({
   }, [onDelete]);
 
   return (
-    <Card>
-      <CardContent>
-        <div className="flex justify-between items-start mb-4">
-          <h4 className="m-0 flex-1 font-semibold text-lg text-text-primary">{acao.acao}</h4>
-          <div className="ml-2">
+    <AcaoCardContainer>
+      <AcaoCardContent>
+        <AcaoCardHeader>
+          <AcaoCardTitle>{acao.acao}</AcaoCardTitle>
+          <AcaoCardStatus>
             <Badge variant={getAcaoStatusBadge(acao.status)}>
               {acao.status}
             </Badge>
-          </div>
-        </div>
-        <p className="text-sm text-text-muted m-0">
-          Prazo: <span className="ml-1">
+          </AcaoCardStatus>
+        </AcaoCardHeader>
+        <AcaoCardPrazo>
+          Prazo: <span style={{ marginLeft: '0.25rem' }}>
             <Badge variant={prazoStatus}>
               {formatDate(acao.prazo)}
             </Badge>
           </span>
-        </p>
-      </CardContent>
-      <CardFooter>
-        <div className="flex gap-2">
-          {nextStatus && (
-            <Button variant="primary" onClick={handleNextStatus} disabled={isLoading}>
-              Marcar como {nextStatus}
-            </Button>
-          )}
-          <Button variant="secondary" onClick={onUpdatePrazo} disabled={isLoading}>
-            Alterar Prazo
-          </Button>
-          <Button variant="danger" onClick={handleDelete} disabled={isLoading}>
-            Deletar
-          </Button>
-        </div>
-      </CardFooter>
-    </Card>
+        </AcaoCardPrazo>
+      </AcaoCardContent>
+      <AcaoCardFooter onPointerDown={(e) => e.stopPropagation()}>
+        <Button variant="secondary" onClick={onUpdatePrazo} disabled={isLoading}>
+          Alterar Prazo
+        </Button>
+        <Button variant="danger" onClick={handleDelete} disabled={isLoading}>
+          Deletar
+        </Button>
+      </AcaoCardFooter>
+    </AcaoCardContainer>
   );
 });
 

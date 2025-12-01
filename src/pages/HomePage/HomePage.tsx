@@ -1,19 +1,25 @@
-import { memo, useEffect, useState, useCallback, useMemo } from "react";
+import { memo, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../../components/templates";
-import { PlanoCard } from "../../components/organisms";
+import { PlanoKanbanBoard } from "../../components/organisms/PlanoKanbanBoard";
 import { Modal } from "../../components/molecules";
 import { Button, Loading, ErrorMessage } from "../../components/atoms";
 import { usePlanoAcaoStore } from "../../store/planoAcaoStore";
 import { PlanoForm } from "../../components/organisms";
-import type { PlanoAcaoFormData, PlanoAcao } from "../../types";
+import type { PlanoAcaoFormData, PlanoAcao, PlanoStatus } from "../../types";
+import {
+  HomePageContainer,
+  HomePageHeader,
+  HomePageTitle,
+  EmptyState,
+  EmptyStateText,
+} from "./HomePage.styled";
 
 export const HomePage = memo(() => {
   const navigate = useNavigate();
-  const { planos, loading, error, carregarPlanos, criarPlano, atualizarPlano, deletarPlano } = usePlanoAcaoStore();
+  const { planos, loading, error, carregarPlanos, criarPlano, atualizarStatusPlano } = usePlanoAcaoStore();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingPlano, setEditingPlano] = useState<PlanoAcao | null>(null);
 
   useEffect(() => {
     carregarPlanos();
@@ -28,35 +34,13 @@ export const HomePage = memo(() => {
     }
   }, [criarPlano]);
 
-  const handleEditPlano = useCallback(async (data: PlanoAcaoFormData) => {
-    if (!editingPlano) return;
-
-    try {
-      await atualizarPlano(editingPlano.id, data);
-      setEditingPlano(null);
-    } catch (error) {
-      console.error("Erro ao atualizar plano:", error);
-    }
-  }, [editingPlano, atualizarPlano]);
-
-  const handleDeletePlano = useCallback(async (id: string) => {
-    await deletarPlano(id);
-  }, [deletarPlano]);
-
-  const handleViewPlano = useCallback((plano: PlanoAcao) => {
+  const handleCardClick = useCallback((plano: PlanoAcao) => {
     navigate(`/plano/${plano.id}`);
   }, [navigate]);
 
-  const handleEditClick = useCallback((plano: PlanoAcao) => {
-    setEditingPlano(plano);
-  }, []);
-
-  const sortedPlanos = useMemo(() => {
-    return [...planos].sort((a, b) => {
-      const statusOrder = { "Concluído": 2, "Em Andamento": 1, "Não Iniciado": 0 };
-      return statusOrder[b.status] - statusOrder[a.status];
-    });
-  }, [planos]);
+  const handleUpdateStatus = useCallback(async (planoId: string, status: PlanoStatus) => {
+    await atualizarStatusPlano(planoId, status);
+  }, [atualizarStatusPlano]);
 
   if (loading && planos.length === 0) {
     return <Loading fullScreen />;
@@ -64,67 +48,47 @@ export const HomePage = memo(() => {
 
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="m-0 text-2xl font-bold text-text-primary">Planos de Ação</h2>
-        <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
-          + Novo Plano de Ação
-        </Button>
-      </div>
-
-      {error && (
-        <ErrorMessage message={error} />
-      )}
-
-      {planos.length === 0 && !loading ? (
-        <div className="text-center p-12 text-text-muted">
-          <p className="mb-4">Nenhum plano de ação cadastrado ainda.</p>
+      <HomePageContainer>
+        <HomePageHeader>
+          <HomePageTitle>Planos de Ação</HomePageTitle>
           <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
-            Criar Primeiro Plano
+            + Novo Plano
           </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6">
-          {sortedPlanos.map((plano) => (
-            <PlanoCard
-              key={plano.id}
-              plano={plano}
-              onView={handleViewPlano}
-              onEdit={handleEditClick}
-              onDelete={handleDeletePlano}
-              isLoading={loading}
-            />
-          ))}
-        </div>
-      )}
+        </HomePageHeader>
 
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="Novo Plano de Ação"
-        footer={null}
-      >
-        <PlanoForm
-          onSubmit={handleCreatePlano}
-          onCancel={() => setIsCreateModalOpen(false)}
-          isLoading={loading}
-        />
-      </Modal>
+        {error && (
+          <ErrorMessage message={error} />
+        )}
 
-      <Modal
-        isOpen={!!editingPlano}
-        onClose={() => setEditingPlano(null)}
-        title="Editar Plano de Ação"
-        footer={null}
-      >
-        {editingPlano && (
-          <PlanoForm
-            onSubmit={handleEditPlano}
-            onCancel={() => setEditingPlano(null)}
-            initialData={{ titulo: editingPlano.titulo, objetivo: editingPlano.objetivo }}
+        {planos.length === 0 && !loading ? (
+          <EmptyState>
+            <EmptyStateText>Nenhum plano de ação cadastrado ainda.</EmptyStateText>
+            <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
+              Criar Primeiro Plano
+            </Button>
+          </EmptyState>
+        ) : (
+          <PlanoKanbanBoard
+            planos={planos}
+            onUpdateStatus={handleUpdateStatus}
+            onClick={handleCardClick}
             isLoading={loading}
           />
         )}
-      </Modal>
+
+        <Modal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          title="Novo Plano de Ação"
+          footer={null}
+        >
+          <PlanoForm
+            onSubmit={handleCreatePlano}
+            onCancel={() => setIsCreateModalOpen(false)}
+            isLoading={loading}
+          />
+        </Modal>
+      </HomePageContainer>
     </Layout>
   );
 });

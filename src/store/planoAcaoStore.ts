@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { PlanoAcao, Acao, PlanoAcaoFormData, AcaoFormData } from "../types";
+import type { PlanoAcao, Acao, PlanoAcaoFormData, AcaoFormData, PlanoStatus } from "../types";
 import { planoAcaoApi } from "../utils/api";
 import { calcularStatusPlano } from "../utils/planoStatusCalculator";
 
@@ -14,6 +14,7 @@ interface PlanoAcaoState {
   buscarPlano: (id: string) => Promise<void>;
   criarPlano: (dados: PlanoAcaoFormData) => Promise<void>;
   atualizarPlano: (id: string, dados: Partial<PlanoAcaoFormData>) => Promise<void>;
+  atualizarStatusPlano: (id: string, status: PlanoStatus) => Promise<void>;
   deletarPlano: (id: string) => Promise<void>;
   adicionarAcao: (planoId: string, dados: AcaoFormData) => Promise<void>;
   atualizarAcao: (
@@ -100,6 +101,27 @@ export const usePlanoAcaoStore = create<PlanoAcaoState>((set, get) => ({
     }
   },
 
+  atualizarStatusPlano: async (id: string, status: PlanoStatus) => {
+    set({ loading: true, error: null });
+    try {
+      const planoAtualizado = await planoAcaoApi.atualizar(id, { status });
+      set((state) => ({
+        planos: state.planos.map((p) => (p.id === id ? planoAtualizado : p)),
+        planoSelecionado:
+          state.planoSelecionado?.id === id
+            ? planoAtualizado
+            : state.planoSelecionado,
+        loading: false,
+      }));
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Erro ao atualizar status do plano",
+        loading: false,
+      });
+      throw error;
+    }
+  },
+
   deletarPlano: async (id: string) => {
     set({ loading: true, error: null });
     try {
@@ -162,7 +184,7 @@ export const usePlanoAcaoStore = create<PlanoAcaoState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await planoAcaoApi.atualizarAcao(planoId, acaoId, dados);
-      const planoAtualizado = await planoAcaoApi.buscarPorId(planoId);
+      let planoAtualizado = await planoAcaoApi.buscarPorId(planoId);
 
       if (!planoAtualizado) {
         throw new Error("Plano não encontrado após atualizar ação");
@@ -172,14 +194,22 @@ export const usePlanoAcaoStore = create<PlanoAcaoState>((set, get) => ({
 
       if (novoStatus !== planoAtualizado.status) {
         await planoAcaoApi.atualizar(planoId, { status: novoStatus });
-        planoAtualizado.status = novoStatus;
+        // Recarrega o plano completo após atualizar o status para garantir sincronização
+        const planoRecarregado = await planoAcaoApi.buscarPorId(planoId);
+        if (planoRecarregado) {
+          planoAtualizado = planoRecarregado;
+        } else {
+          planoAtualizado.status = novoStatus;
+        }
       }
 
       const { planos, planoSelecionado } = get();
+      // Cria uma nova referência do plano atualizado para garantir que o React detecte a mudança
+      const planoAtualizadoComNovaRef = { ...planoAtualizado, acoes: [...planoAtualizado.acoes] };
       set({
-        planos: planos.map((p) => (p.id === planoId ? planoAtualizado : p)),
+        planos: planos.map((p) => (p.id === planoId ? planoAtualizadoComNovaRef : p)),
         planoSelecionado:
-          planoSelecionado?.id === planoId ? planoAtualizado : planoSelecionado,
+          planoSelecionado?.id === planoId ? planoAtualizadoComNovaRef : planoSelecionado,
         loading: false,
       });
     } catch (error) {
